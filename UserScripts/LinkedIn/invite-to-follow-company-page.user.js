@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         LinkedIn | Invite to follow Company Page
 // @namespace    https://github.com/gustavnyberg/tampermonkey
-// @version      1.0.1
+// @version      1.0.2
 // @description  Adds select all invite connections to follow a LinkedIn company page
 // @author       Gustav Nyberg
 // @match        https://www.linkedin.com/company/*/admin/dashboard/?invite=true
@@ -216,7 +216,7 @@
                 }
             }
             
-            return '1.0.0'; // Default fallback
+            return '1.0.2'; // Default fallback
         }
 
         showStartupAlert() {
