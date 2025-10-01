@@ -44,6 +44,7 @@
     class Inviter {
         constructor() {
             this.isRunning = false;
+            this.version = this.extractVersion();
         }
 
         async runSelectAll() {
@@ -52,6 +53,9 @@
                 return;
             }
             this.isRunning = true;
+
+            // Show startup alert with version info
+            this.showStartupAlert();
 
             try {
                 const creditsAvailable = this.getAvailableCredits();
@@ -192,6 +196,32 @@
         }
 
         /* --- Utilities --- */
+
+        extractVersion() {
+            // Extract version from the script metadata
+            const scriptTag = document.querySelector('script[src*="invite-to-follow-company-page"]');
+            if (scriptTag) {
+                // For Tampermonkey scripts, we can get the version from the script content
+                const scriptContent = document.querySelector('script').textContent;
+                const versionMatch = scriptContent.match(/@version\s+([\d.]+)/);
+                return versionMatch ? versionMatch[1] : 'Unknown';
+            }
+            
+            // Fallback: try to get from the current script
+            const scripts = document.querySelectorAll('script');
+            for (const script of scripts) {
+                if (script.textContent.includes('Invite to follow Company Page')) {
+                    const versionMatch = script.textContent.match(/@version\s+([\d.]+)/);
+                    if (versionMatch) return versionMatch[1];
+                }
+            }
+            
+            return '1.0.0'; // Default fallback
+        }
+
+        showStartupAlert() {
+            alert(`InviteToFollowCompanyPageInviter is running in version: ${this.version}`);
+        }
 
         createButton(label, onClick) {
             const btn = document.createElement('button');
