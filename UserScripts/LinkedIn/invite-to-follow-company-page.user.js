@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         LinkedIn | Invite to follow Company Page
 // @namespace    https://github.com/gustavnyberg/tampermonkey
-// @version      1.0.0
+// @version      1.0.1
 // @description  Adds select all invite connections to follow a LinkedIn company page
 // @author       Gustav Nyberg
 // @match        https://www.linkedin.com/company/*/admin/dashboard/
