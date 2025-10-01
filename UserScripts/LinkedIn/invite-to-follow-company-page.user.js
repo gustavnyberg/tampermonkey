@@ -1,13 +1,16 @@
 // ==UserScript==
-// @name         This is Edge script
-// @namespace    electronomics
-// @version      1.0
-// @description  Enable Select All for Invite to follow on Company Page
-// @author       You
+// @name         LinkedIn | Invite to follow Company Page
+// @namespace    https://github.com/gustavnyberg/tampermonkey
+// @version      1.0.0
+// @description  Adds select all invite connections to follow a LinkedIn company page
+// @author       Gustav Nyberg
 // @match        https://www.linkedin.com/company/*/admin/dashboard/
-// @icon         https://www.google.com/s2/favicons?sz=64&domain=tampermonkey.net
 // @grant        none
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=tampermonkey.net
+// @updateURL    https://raw.githubusercontent.com/gustavnyberg/tampermonkey/main/UserScripts/LinkedIn/invite-to-follow-company-page.user.js
+// @downloadURL  https://raw.githubusercontent.com/gustavnyberg/tampermonkey/main/UserScripts/LinkedIn/invite-to-follow-company-page.user.js
 // ==/UserScript==
+
 
 (function () {
     'use strict';
