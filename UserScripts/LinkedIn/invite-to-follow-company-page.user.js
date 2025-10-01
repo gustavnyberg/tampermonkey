@@ -11,60 +11,135 @@
 // @downloadURL  https://raw.githubusercontent.com/gustavnyberg/tampermonkey/main/UserScripts/LinkedIn/invite-to-follow-company-page.user.js
 // ==/UserScript==
 
+/* ---------------------------------------------------
+   CURSED CODES:
+--------------------------------------------------- */
+
+/* ---------------------------------------------------
+   DAUNTING DESIGNS:
+--------------------------------------------------- */
+
+/* ---------------------------------------------------
+   FEARED FEATURES:
+--------------------------------------------------- */
+
+/* ---------------------------------------------------
+   TERRIFYING TODOS:
+   // TODO: Add abort button
+   // TODO: Add counter to select a given number of invites/credits
+   // TODO: Add break condition for when given/max number of invites reached (also handle 'Show more results')
+   // TODO: Add more user feedback (alerts, UI messages) instead of just console.log
+   // TODO: Handle unexpected DOM changes or missing elements more gracefully
+--------------------------------------------------- */
 
 (function () {
     'use strict';
 
-    class LinkedInInviter {
+    // Timing constants
+    const waitContainer = 500;
+    const waitInvite = 1200;
+    const waitScroll = 600;
+    const maxIdleChecks = 5;
+
+    class Inviter {
+        constructor() {
+            this.isRunning = false;
+        }
+
         async runSelectAll() {
-            const available = this.getAvailableCredits();
-            if (!available) {
-                this.log("No available credits. Stopping.");
+            if (this.isRunning) {
+                this.log("Already running. Ignoring duplicate start.");
                 return;
             }
+            this.isRunning = true;
 
-            let invited = 0;
-            let attempts = 0;
-            const maxAttempts = 30;
-
-            while (invited < available && attempts < maxAttempts) {
-                const container = this.getResultsContainer();
-                if (!container) {
-                    this.log("Results container not found yet. Waiting...");
-                    await this.wait(500);
-                    attempts++;
-                    continue;
+            try {
+                const creditsAvailable = this.getAvailableCredits();
+                if (!creditsAvailable) {
+                    this.log("No credits available. Stopping.");
+                    return;
                 }
 
-                const checkboxes = this.findInviteCheckboxes(container);
-                const remaining = available - invited;
+                let creditsUsed = 0;
+                let creditsRemaining = creditsAvailable;
 
-                if (checkboxes.length > 0) {
-                    for (const cb of checkboxes.slice(0, remaining)) cb.click();
-                    invited += Math.min(remaining, checkboxes.length);
-                    this.log(`Selected ${invited}/${available}`);
-                    attempts++;
-                    await this.wait(1200);
-                    continue;
+                let invitesPlanned = creditsAvailable;
+                let invitesSelected = 0;
+                let invitesRemaining = invitesPlanned;
+
+                let idleChecks = 0;
+
+                while (creditsRemaining > 0 && invitesRemaining > 0) {
+                    const container = this.getResultsContainer();
+                    if (!container) {
+                        this.log("Results container not found yet. Waiting...");
+                        await this.wait(waitContainer);
+                        continue;
+                    }
+
+                    const checkboxes = this.findInviteCheckboxes(container);
+                    let invitesThisRound = 0;
+
+                    if (checkboxes.length > 0) {
+                        invitesThisRound = Math.min(creditsRemaining, invitesRemaining, checkboxes.length);
+
+                        for (const cb of checkboxes.slice(0, invitesThisRound)) cb.click();
+
+                        // Update invites
+                        invitesSelected += invitesThisRound;
+                        invitesRemaining -= invitesThisRound;
+
+                        // Update credits
+                        creditsUsed += invitesThisRound;
+                        creditsRemaining -= invitesThisRound;
+
+                        // Integrity check
+                        if (creditsRemaining !== invitesRemaining) {
+                            throw new Error(`Mismatch detected: creditsRemaining=${creditsRemaining}, invitesRemaining=${invitesRemaining}`);
+                        }
+
+                        this.log(
+                            `Invites selected: ${invitesSelected}/${invitesPlanned} | Credits used: ${creditsUsed}/${creditsAvailable}`
+                        );
+
+                        await this.wait(waitInvite);
+                    } else {
+                        await this.scrollToBottom(container);
+
+                        const showMore = this.findShowMoreButton(container);
+                        if (showMore) {
+                            this.log("Clicking 'Show more results'...");
+                            showMore.click();
+                            await this.wait(waitInvite);
+                        } else {
+                            this.log(
+                                `No more results. Invites selected: ${invitesSelected}/${invitesPlanned}, Credits used: ${creditsUsed}/${creditsAvailable}`
+                            );
+                            break;
+                        }
+                    }
+
+                    if (invitesThisRound === 0) {
+                        idleChecks++;
+                        if (idleChecks >= maxIdleChecks) {
+                            this.log(
+                                `Stopping due to repeated idle cycles. Invites selected: ${invitesSelected}/${invitesPlanned}, Credits used: ${creditsUsed}/${creditsAvailable}`
+                            );
+                            break;
+                        }
+                    } else {
+                        idleChecks = 0;
+                    }
                 }
 
-                // If no checkboxes, scroll and click "Show more" if it appears
-                await this.scrollToBottom(container);
-
-                const showMore = this.findShowMoreButton(container);
-                if (showMore) {
-                    this.log("Clicking 'Show more results'...");
-                    showMore.click();
-                    await this.wait(1200);
-                } else {
-                    this.log("No more results to load.");
-                    break;
+                if (creditsRemaining === 0 && invitesRemaining === 0) {
+                    this.log(`Done. Credit limit reached: ${creditsUsed}/${creditsAvailable}`);
                 }
-
-                attempts++;
+            } catch (err) {
+                console.error("[Inviter] Error:", err);
+            } finally {
+                this.isRunning = false;
             }
-
-            this.log(`Done. Total invited: ${invited}`);
         }
 
         addButtons() {
@@ -77,7 +152,7 @@
             if (!parent) return;
 
             parent.appendChild(this.createButton("Select All", () => this.runSelectAll()));
-            this.log("Buttons added.");
+            this.log("Button added.");
         }
 
         /* --- DOM helpers --- */
@@ -99,19 +174,21 @@
         getAvailableCredits() {
             const el = this.findCreditsElement();
             if (!el) return null;
-            const match = el.textContent.match(/(\d+)\s*\/\s*(\d+)/);
+            const text = el.textContent.replace(/\s|,/g, '');
+            const match = text.match(/(\d+)\s*\/\s*(\d+)/);
             return match ? parseInt(match[1], 10) : null;
         }
 
         findShowMoreButton(container) {
-            return [...container.parentElement.querySelectorAll('button span.artdeco-button__text')]
+            const host = container?.parentElement ?? document;
+            return [...host.querySelectorAll('button span.artdeco-button__text')]
                 .find(el => el.textContent.trim().toLowerCase() === 'show more results')
-                ?.closest('button');
+                ?.closest('button') || null;
         }
 
         async scrollToBottom(container) {
             container.scrollTop = container.scrollHeight;
-            await this.wait(600);
+            await this.wait(waitScroll);
         }
 
         /* --- Utilities --- */
@@ -134,15 +211,15 @@
         }
 
         wait(ms) { return new Promise(r => setTimeout(r, ms)); }
-        log(msg) { console.log(`[LinkedIn Inviter] ${msg}`); }
+        log(msg) { console.log(`[Inviter] ${msg}`); }
     }
 
     /* --- Bootstrap --- */
 
-    const inviter = new LinkedInInviter();
+    const inviter = new Inviter();
 
+    // Observe page changes and inject button when credits element appears
     const observer = new MutationObserver(() => inviter.addButtons());
     observer.observe(document.body, { childList: true, subtree: true });
 
-    setInterval(() => inviter.addButtons(), 3000);
 })();
