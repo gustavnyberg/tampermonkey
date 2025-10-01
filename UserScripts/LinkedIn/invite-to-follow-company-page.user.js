@@ -41,7 +41,7 @@
     const waitScroll = 600;
     const maxIdleChecks = 5;
 
-    class Inviter {
+    class InviteToFollowCompanyPageInviter {
         constructor() {
             this.isRunning = false;
             this.version = this.extractVersion();
@@ -140,7 +140,7 @@
                     this.log(`Done. Credit limit reached: ${creditsUsed}/${creditsAvailable}`);
                 }
             } catch (err) {
-                console.error("[Inviter] Error:", err);
+                console.error("[InviteToFollowCompanyPageInviter] Error:", err);
             } finally {
                 this.isRunning = false;
             }
@@ -241,12 +241,12 @@
         }
 
         wait(ms) { return new Promise(r => setTimeout(r, ms)); }
-        log(msg) { console.log(`[Inviter] ${msg}`); }
+        log(msg) { console.log(`[InviteToFollowCompanyPageInviter] ${msg}`); }
     }
 
     /* --- Bootstrap --- */
 
-    const inviter = new Inviter();
+    const inviter = new InviteToFollowCompanyPageInviter();
 
     // Observe page changes and inject button when credits element appears
     const observer = new MutationObserver(() => inviter.addButtons());
