@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         LinkedIn | Invite to follow Company Page
 // @namespace    https://github.com/gustavnyberg/tampermonkey
-// @version      1.0.2
+// @version      1.0.3
 // @description  Adds select all invite connections to follow a LinkedIn company page
 // @author       Gustav Nyberg
 // @match        https://www.linkedin.com/company/*/admin/dashboard/
@@ -198,25 +198,25 @@
         /* --- Utilities --- */
 
         extractVersion() {
-            // Extract version from the script metadata
-            const scriptTag = document.querySelector('script[src*="invite-to-follow-company-page"]');
-            if (scriptTag) {
-                // For Tampermonkey scripts, we can get the version from the script content
-                const scriptContent = document.querySelector('script').textContent;
-                const versionMatch = scriptContent.match(/@version\s+([\d.]+)/);
-                return versionMatch ? versionMatch[1] : 'Unknown';
-            }
+            // // Extract version from the script metadata
+            // const scriptTag = document.querySelector('script[src*="invite-to-follow-company-page"]');
+            // if (scriptTag) {
+            //     // For Tampermonkey scripts, we can get the version from the script content
+            //     const scriptContent = document.querySelector('script').textContent;
+            //     const versionMatch = scriptContent.match(/@version\s+([\d.]+)/);
+            //     return versionMatch ? versionMatch[1] : 'Unknown';
+            // }
             
-            // Fallback: try to get from the current script
-            const scripts = document.querySelectorAll('script');
-            for (const script of scripts) {
-                if (script.textContent.includes('Invite to follow Company Page')) {
-                    const versionMatch = script.textContent.match(/@version\s+([\d.]+)/);
-                    if (versionMatch) return versionMatch[1];
-                }
-            }
+            // // Fallback: try to get from the current script
+            // const scripts = document.querySelectorAll('script');
+            // for (const script of scripts) {
+            //     if (script.textContent.includes('Invite to follow Company Page')) {
+            //         const versionMatch = script.textContent.match(/@version\s+([\d.]+)/);
+            //         if (versionMatch) return versionMatch[1];
+            //     }
+            // }
             
-            return '1.0.2'; // Default fallback
+            return '1.0.3'; // Default fallback
         }
 
         showStartupAlert() {
