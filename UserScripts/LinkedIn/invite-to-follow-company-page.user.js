@@ -4,7 +4,7 @@
 // @version      1.0.1
 // @description  Adds select all invite connections to follow a LinkedIn company page
 // @author       Gustav Nyberg
-// @match        https://www.linkedin.com/company/*/admin/dashboard/
+// @match        https://www.linkedin.com/company/*/admin/dashboard/?invite=true
 // @grant        none
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=tampermonkey.net
 // @updateURL    https://raw.githubusercontent.com/gustavnyberg/tampermonkey/main/UserScripts/LinkedIn/invite-to-follow-company-page.user.js
